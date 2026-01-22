@@ -44,7 +44,7 @@
     position: fixed;
     bottom: 10px;
     right: 10px;
-    visibility: hidden; /* opacity:0 は不可 */
+    opacity: 0.01; /* visibility:hidden は不可、opacity:0 は不可 */
   }
 </style>
 </head>
@@ -62,6 +62,12 @@
 </video>
 
 <script>
+// ページ読み込み時に動画を再生（Safari が許可する条件）
+window.addEventListener("load", () => {
+  const v = document.getElementById("pipVideo");
+  v.play().catch(()=>{});
+});
+
 // 時計
 function updateClock() {
   const now = new Date();
@@ -113,17 +119,10 @@ setInterval(updateRates, 30000);
 const video = document.getElementById("pipVideo");
 
 document.getElementById("pipButton").addEventListener("click", () => {
-  const playPromise = video.play();
-
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      video.requestPictureInPicture().catch(e => {
-        alert("PiP error: " + e.message);
-      });
-    }).catch(e => {
-      alert("Play error: " + e.message);
-    });
-  }
+  // すでに再生中の動画に対して同期的に PiP を要求
+  video.requestPictureInPicture().catch(e => {
+    alert("PiP error: " + e.message);
+  });
 });
 </script>
 
