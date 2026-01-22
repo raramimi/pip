@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PiP Canvas Clock</title>
+<title>Canvas PIP Clock + Rates</title>
 
 <style>
   body {
@@ -24,35 +24,55 @@
     border: 2px solid #888;
   }
 
-  /* PiP 用 video（透明扱いにするため 1% だけ見える） */
+  /* 画面に表示する canvas（PiP と同じ比率に変更） */
+  #viewCanvas {
+    width: 100vw;
+    max-width: 640px;
+    aspect-ratio: 640 / 200;
+    background: #000;
+    margin-top: 10px;
+  }
+
+  /* PiP 用 video（可視扱いのため 1% だけ見える） */
   #pipVideo {
     width: 80px;
-    height: 30px;
+    height: 25px;
     position: fixed;
     bottom: 10px;
     right: 10px;
     opacity: 0.01;
   }
-
-  /* 画面に表示する canvas（確認用） */
-  #viewCanvas {
-    width: 90vw;
-    max-width: 640px;
-    margin-top: 20px;
-  }
 </style>
 </head>
 <body>
 
-<h2>PiP Canvas Clock</h2>
+<h2>Canvas PIP Clock + Rates</h2>
 
+<!-- PiP と同じ解像度に変更 -->
 <canvas id="viewCanvas" width="640" height="200"></canvas>
 
-<button id="pipButton">PiP開始</button>
+<div>
+  <button id="pipButton">PiP開始</button>
+</div>
 
 <video id="pipVideo" playsinline muted></video>
 
 <script>
-// ====== Canvas 設定 ======
+// ====== 設定 ======
 const canvas = document.getElementById('viewCanvas');
-const ctx = canvas.get
+const ctx = canvas.getContext('2d');
+
+let lastUSD = null;
+let lastNK  = null;
+let usd = null;
+let nk  = null;
+
+// ====== 時計 + レート描画 ======
+function draw() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+
+  // 背景
+  ctx.fillStyle = 'black';
