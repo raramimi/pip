@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Canvas PIP Clock + Rates</title>
+<title>PiP Canvas Clock</title>
 
 <style>
   body {
@@ -24,141 +24,35 @@
     border: 2px solid #888;
   }
 
-  /* 画面に表示する canvas（普通の時計表示用） */
-  #viewCanvas {
-    width: 100vw;
-    max-width: 600px;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    margin-top: 10px;
-  }
-
-  /* PiP 用 video（ほぼ見えないが可視扱い） */
+  /* PiP 用 video（透明扱いにするため 1% だけ見える） */
   #pipVideo {
-    width: 60px;
-    height: 40px;
+    width: 80px;
+    height: 30px;
     position: fixed;
     bottom: 10px;
     right: 10px;
     opacity: 0.01;
   }
+
+  /* 画面に表示する canvas（確認用） */
+  #viewCanvas {
+    width: 90vw;
+    max-width: 640px;
+    margin-top: 20px;
+  }
 </style>
 </head>
 <body>
 
-<h2>Canvas PIP Clock + Rates</h2>
+<h2>PiP Canvas Clock</h2>
 
-<canvas id="viewCanvas" width="640" height="360"></canvas>
+<canvas id="viewCanvas" width="640" height="200"></canvas>
 
-<div>
-  <button id="pipButton">PiP開始</button>
-</div>
+<button id="pipButton">PiP開始</button>
 
-<!-- canvas からのストリームを受ける video -->
 <video id="pipVideo" playsinline muted></video>
 
 <script>
-// ====== 設定 ======
+// ====== Canvas 設定 ======
 const canvas = document.getElementById('viewCanvas');
-const ctx = canvas.getContext('2d');
-
-let lastUSD = null;
-let lastNK  = null;
-let usd = null;
-let nk  = null;
-
-// ====== 時計 + レート描画 ======
-function draw() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2, '0');
-  const m = String(now.getMinutes()).padStart(2, '0');
-  const s = String(now.getSeconds()).padStart(2, '0');
-
-  // 背景
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 時計
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 72px Courier New';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`${h}:${m}:${s}`, canvas.width / 2, canvas.height / 2 - 40);
-
-  // レート表示
-  ctx.font = 'bold 32px Courier New';
-  ctx.textAlign = 'left';
-
-  // USD/JPY
-  if (usd !== null) {
-    const color = (lastUSD !== null && usd > lastUSD) ? '#0f0' : (lastUSD !== null ? '#f33' : '#fff');
-    ctx.fillStyle = color;
-    ctx.fillText(`USD/JPY: ${usd}`, 40, canvas.height / 2 + 20);
-  } else {
-    ctx.fillStyle = '#888';
-    ctx.fillText(`USD/JPY: --`, 40, canvas.height / 2 + 20);
-  }
-
-  // 日経
-  if (nk !== null) {
-    const color = (lastNK !== null && nk > lastNK) ? '#0f0' : (lastNK !== null ? '#f33' : '#fff');
-    ctx.fillStyle = color;
-    ctx.fillText(`NK225: ${nk}`, 40, canvas.height / 2 + 70);
-  } else {
-    ctx.fillStyle = '#888';
-    ctx.fillText(`NK225: --`, 40, canvas.height / 2 + 70);
-  }
-}
-
-// 1秒ごとに描画更新
-setInterval(draw, 1000);
-draw();
-
-// ====== レート取得 ======
-async function fetchRate(url) {
-  const res = await fetch(url);
-  const json = await res.json();
-  const result = json.chart.result[0];
-  return result.meta.regularMarketPrice;
-}
-
-async function updateRates() {
-  try {
-    const newUSD = await fetchRate("https://query1.finance.yahoo.com/v8/finance/chart/USDJPY=X");
-    const newNK  = await fetchRate("https://query1.finance.yahoo.com/v8/finance/chart/NK225M.FGI");
-
-    lastUSD = usd;
-    lastNK  = nk;
-
-    usd = newUSD;
-    nk  = newNK;
-
-  } catch (e) {
-    // 失敗時はそのまま（表示は -- のまま）
-    console.log('Rate fetch error', e);
-  }
-}
-updateRates();
-setInterval(updateRates, 30000);
-
-// ====== canvas → video ストリーム化 ======
-const stream = canvas.captureStream(30); // 30fps
-const pipVideo = document.getElementById('pipVideo');
-pipVideo.srcObject = stream;
-
-// ページ読み込み時に video 再生開始（Safari 対応）
-window.addEventListener('load', () => {
-  pipVideo.play().catch(() => {});
-});
-
-// ====== PiP 開始ボタン ======
-document.getElementById('pipButton').addEventListener('click', () => {
-  // すでに再生中の canvas ストリーム video に対して PiP 要求
-  pipVideo.requestPictureInPicture().catch(e => {
-    alert("PiP error: " + e.message);
-  });
-});
-</script>
-
-</body>
-</html>
+const ctx = canvas.get
