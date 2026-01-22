@@ -76,3 +76,87 @@ function draw() {
 
   // 背景
   ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 時計
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 72px Courier New';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${h}:${m}:${s}`, canvas.width / 2, canvas.height / 2 - 20);
+
+  // レート表示
+  ctx.font = 'bold 28px Courier New';
+  ctx.textAlign = 'left';
+
+  // USD/JPY
+  if (usd !== null) {
+    const color = (lastUSD !== null && usd > lastUSD) ? '#0f0' : (lastUSD !== null ? '#f33' : '#fff');
+    ctx.fillStyle = color;
+    ctx.fillText(`USD/JPY: ${usd}`, 20, canvas.height - 60);
+  } else {
+    ctx.fillStyle = '#888';
+    ctx.fillText(`USD/JPY: --`, 20, canvas.height - 60);
+  }
+
+  // 日経
+  if (nk !== null) {
+    const color = (lastNK !== null && nk > lastNK) ? '#0f0' : (lastNK !== null ? '#f33' : '#fff');
+    ctx.fillStyle = color;
+    ctx.fillText(`NK225: ${nk}`, 20, canvas.height - 25);
+  } else {
+    ctx.fillStyle = '#888';
+    ctx.fillText(`NK225: --`, 20, canvas.height - 25);
+  }
+}
+
+// 1秒ごとに描画更新
+setInterval(draw, 1000);
+draw();
+
+// ====== レート取得 ======
+async function fetchRate(url) {
+  const res = await fetch(url);
+  const json = await res.json();
+  const result = json.chart.result[0];
+  return result.meta.regularMarketPrice;
+}
+
+async function updateRates() {
+  try {
+    const newUSD = await fetchRate("https://query1.finance.yahoo.com/v8/finance/chart/USDJPY=X");
+    const newNK  = await fetchRate("https://query1.finance.yahoo.com/v8/finance/chart/NK225M.FGI");
+
+    lastUSD = usd;
+    lastNK  = nk;
+
+    usd = newUSD;
+    nk  = newNK;
+
+  } catch (e) {
+    console.log('Rate fetch error', e);
+  }
+}
+updateRates();
+setInterval(updateRates, 30000);
+
+// ====== canvas → video ストリーム化 ======
+const stream = canvas.captureStream(30);
+const pipVideo = document.getElementById('pipVideo');
+pipVideo.srcObject = stream;
+
+// Safari 対応：ロード時に再生開始
+window.addEventListener('load', () => {
+  pipVideo.play().catch(() => {});
+});
+
+// ====== PiP 開始 ======
+document.getElementById('pipButton').addEventListener('click', () => {
+  pipVideo.requestPictureInPicture().catch(e => {
+    alert("PiP error: " + e.message);
+  });
+});
+</script>
+
+</body>
+</html>
