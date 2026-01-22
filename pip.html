@@ -37,7 +37,7 @@
     border: 2px solid #888;
   }
 
-  /* Safari で PiP を許可させるため「可視扱い」にする */
+  /* Safari が PiP 対象として認識するための最小可視状態 */
   #pipVideo {
     width: 60px;
     height: 40px;
@@ -109,15 +109,20 @@ async function updateRates() {
 updateRates();
 setInterval(updateRates, 30000);
 
-// PiP（Safari対応）
+// PiP（Safari 完全対応版）
 const video = document.getElementById("pipVideo");
 
-document.getElementById("pipButton").addEventListener("click", async () => {
-  try {
-    await video.play();  // Safari が「ユーザー操作で再生」と認識
-    await video.requestPictureInPicture();
-  } catch (e) {
-    alert("PiP error: " + e.message);
+document.getElementById("pipButton").addEventListener("click", () => {
+  const playPromise = video.play();
+
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      video.requestPictureInPicture().catch(e => {
+        alert("PiP error: " + e.message);
+      });
+    }).catch(e => {
+      alert("Play error: " + e.message);
+    });
   }
 });
 </script>
