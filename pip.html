@@ -1,39 +1,125 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PIP Clock</title>
-  <style>
-    body {
-      margin: 0;
-      background-color: black;
-      color: white;
-      font-family: 'Courier New', monospace;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    #clock {
-      font-size: 10vw;
-      letter-spacing: 0.1em;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PIP Clock + Rates</title>
+
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+    color: white;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+  }
+
+  #clock {
+    font-size: 12vw;
+    margin-top: 10px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #fff, 0 0 20px #0ff;
+  }
+
+  .rate {
+    font-size: 5vw;
+    margin-top: 5px;
+    font-weight: bold;
+  }
+
+  #pipButton {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 5vw;
+    background: #444;
+    color: white;
+    border-radius: 12px;
+    border: 2px solid #888;
+  }
+
+  video {
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
 </head>
 <body>
-  <div id="clock">--:--:--</div>
 
-  <script>
-    function updateClock() {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${h}:${m}:${s}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-  </script>
+<video id="pipVideo" playsinline muted loop>
+  <source src="pip.mp4" type="video/mp4">
+</video>
+
+<div id="clock">--:--:--</div>
+
+<div class="rate">USDJPY: <span id="usd">--</span></div>
+<div class="rate">NK225 FUT: <span id="nk">--</span></div>
+
+<button id="pipButton">PiP開始</button>
+
+<script>
+// 時計
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Yahoo Finance API
+async function fetchRate(url) {
+  const res = await fetch(url);
+  const json = await res.json();
+  const result = json.chart.result[0];
+  return result.meta.regularMarketPrice;
+}
+
+let lastUSD = null;
+let lastNK = null;
+
+async function updateRates() {
+  try {
+    const usd = await fetchRate("https://query1.finance.yahoo.com/v8/finance/chart/USDJPY=X");
+    const nk  = await fetchRate("https://query1.finance.yahoo.com/v8/finance/chart/NK225M.FGI");
+
+    const usdElem = document.getElementById("usd");
+    const nkElem  = document.getElementById("nk");
+
+    usdElem.textContent = usd;
+    nkElem.textContent  = nk;
+
+    if (lastUSD !== null) usdElem.style.color = usd > lastUSD ? "#0f0" : "#f33";
+    if (lastNK !== null)  nkElem.style.color  = nk  > lastNK  ? "#0f0" : "#f33";
+
+    lastUSD = usd;
+    lastNK  = nk;
+
+  } catch (e) {
+    document.getElementById("usd").textContent = "ERR";
+    document.getElementById("nk").textContent = "ERR";
+  }
+}
+updateRates();
+setInterval(updateRates, 30000);
+
+// PiP開始（Safariで確実に動く形）
+const video = document.getElementById("pipVideo");
+
+document.getElementById("pipButton").addEventListener("click", async () => {
+  try {
+    await video.play();  // ← Safariが「ユーザー操作で再生」と認識
+    await video.requestPictureInPicture();  // ← PiP起動
+  } catch (e) {
+    console.log("PiP error:", e);
+  }
+});
+</script>
+
 </body>
 </html>
