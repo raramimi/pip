@@ -56,15 +56,14 @@
 <button id="pipButton">PiP開始</button>
 
 <script>
-const video = document.getElementById("pipVideo");
+const video = document.getElementById("pipVideo")
 
-document.getElementById("pipButton").addEventListener("click", async () => {
-  try {
-    await video.play();
-    await video.requestPictureInPicture();
-  } catch (e) {
+document.getElementById("pipButton").addEventListener("click", () => {
+  video.play().then(() => {
+    return video.requestPictureInPicture();
+  }).catch((e) => {
     alert("PiP error: " + e.message);
-  }
+  });
 });
 </script>
   
