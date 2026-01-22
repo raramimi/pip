@@ -113,18 +113,6 @@ async function updateRates() {
 }
 updateRates();
 setInterval(updateRates, 30000);
-
-// PiP開始（Safariで確実に動く形）
-const video = document.getElementById("pipVideo");
-
-document.getElementById("pipButton").addEventListener("click", async () => {
-  try {
-    await video.play();  // ← Safariが「ユーザー操作で再生」と認識
-    await video.requestPictureInPicture();  // ← PiP起動
-  } catch (e) {
-    console.log("PiP error:", e);
-  }
-});
 </script>
 
 </body>
