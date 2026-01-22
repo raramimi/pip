@@ -49,18 +49,25 @@
 </head>
 <body>
 
-<video id="pipVideo" playsinline muted loop>
+<video id="pipVideo" playsinline muted loop autoplay>
   <source src="https://raramimi.github.io/pip/pip.mp4" type="video/mp4">
 </video>
-
-<div id="clock">--:--:--</div>
-
-<div class="rate">USDJPY: <span id="usd">--</span></div>
-<div class="rate">NK225 FUT: <span id="nk">--</span></div>
 
 <button id="pipButton">PiP開始</button>
 
 <script>
+const video = document.getElementById("pipVideo");
+
+document.getElementById("pipButton").addEventListener("click", async () => {
+  try {
+    await video.play();
+    await video.requestPictureInPicture();
+  } catch (e) {
+    alert("PiP error: " + e.message);
+  }
+});
+</script>
+  
 // 時計
 function updateClock() {
   const now = new Date();
