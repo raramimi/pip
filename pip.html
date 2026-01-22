@@ -49,16 +49,16 @@
 </head>
 <body>
 
-<video id="pipVideo" playsinline muted loop autoplay>
+<button id="pipButton">PiP開始</button>
+<video id="pipVideo" muted playsinline loop autoplay>
   <source src="https://raramimi.github.io/pip/pip.mp4" type="video/mp4">
 </video>
 
-<button id="pipButton">PiP開始</button>
-
 <script>
-const video = document.getElementById("pipVideo")
+const video = document.getElementById("pipVideo");
+const button = document.getElementById("pipButton");
 
-document.getElementById("pipButton").addEventListener("click", () => {
+button.addEventListener("click", function () {
   video.play().then(() => {
     return video.requestPictureInPicture();
   }).catch((e) => {
