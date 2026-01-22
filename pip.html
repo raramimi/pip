@@ -49,23 +49,32 @@
 </head>
 <body>
 
-<button id="pipButton">PiP開始</button>
-<video id="pipVideo" muted playsinline loop autoplay>
+<video id="pipVideo" playsinline muted loop style="
+  width: 60px;
+  height: 40px;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  visibility: hidden;
+">
   <source src="https://raramimi.github.io/pip/pip.mp4" type="video/mp4">
 </video>
 
+<button id="pipButton">PiP開始</button>
+
 <script>
 const video = document.getElementById("pipVideo");
-const button = document.getElementById("pipButton");
 
-button.addEventListener("click", function () {
-  video.play().then(() => {
-    return video.requestPictureInPicture();
-  }).catch((e) => {
+document.getElementById("pipButton").addEventListener("click", async () => {
+  try {
+    await video.play();  
+    await video.requestPictureInPicture();
+  } catch (e) {
     alert("PiP error: " + e.message);
-  });
+  }
 });
 </script>
+
   
 // 時計
 function updateClock() {
