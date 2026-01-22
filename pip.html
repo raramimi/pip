@@ -8,7 +8,7 @@
 <style>
   body {
     margin: 0;
-    background: transparent;
+    background: black;
     color: white;
     font-family: 'Courier New', monospace;
     text-align: center;
@@ -22,7 +22,7 @@
   }
 
   .rate {
-    font-size: 5vw;
+    font-size: 6vw;
     margin-top: 5px;
     font-weight: bold;
   }
@@ -30,44 +30,38 @@
   #pipButton {
     margin-top: 20px;
     padding: 12px 24px;
-    font-size: 5vw;
+    font-size: 6vw;
     background: #444;
     color: white;
     border-radius: 12px;
     border: 2px solid #888;
   }
 
+  /* Safari で PiP を許可させるため「可視扱い」にする */
+  #pipVideo {
+    width: 60px;
+    height: 40px;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    visibility: hidden; /* opacity:0 は不可 */
+  }
 </style>
 </head>
 <body>
 
-<video id="pipVideo" playsinline muted loop style="
-  width: 60px;
-  height: 40px;
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  visibility: hidden;
-">
-  <source src="https://raramimi.github.io/pip/pip.mp4" type="video/mp4">
-</video>
+<div id="clock"></div>
+<div class="rate">USD/JPY: <span id="usd">--</span></div>
+<div class="rate">日経225: <span id="nk">--</span></div>
 
 <button id="pipButton">PiP開始</button>
 
+<!-- Safari が PiP 対象として認識する動画 -->
+<video id="pipVideo" playsinline muted loop>
+  <source src="https://raramimi.github.io/pip/pip.mp4" type="video/mp4">
+</video>
+
 <script>
-const video = document.getElementById("pipVideo");
-
-document.getElementById("pipButton").addEventListener("click", async () => {
-  try {
-    await video.play();  
-    await video.requestPictureInPicture();
-  } catch (e) {
-    alert("PiP error: " + e.message);
-  }
-});
-</script>
-
-  
 // 時計
 function updateClock() {
   const now = new Date();
@@ -114,6 +108,18 @@ async function updateRates() {
 }
 updateRates();
 setInterval(updateRates, 30000);
+
+// PiP（Safari対応）
+const video = document.getElementById("pipVideo");
+
+document.getElementById("pipButton").addEventListener("click", async () => {
+  try {
+    await video.play();  // Safari が「ユーザー操作で再生」と認識
+    await video.requestPictureInPicture();
+  } catch (e) {
+    alert("PiP error: " + e.message);
+  }
+});
 </script>
 
 </body>
